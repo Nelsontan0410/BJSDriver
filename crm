@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Service Feedback</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles primarily using Tailwind utility classes */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Tailwind: bg-gray-100 */
+        }
+        .input-field-group {
+            margin-bottom: 1rem; /* Tailwind: mb-4 */
+        }
+        .input-label {
+            display: block;
+            font-size: 0.875rem; /* Tailwind: text-sm */
+            font-weight: 500; /* Tailwind: font-medium */
+            color: #374151; /* Tailwind: text-gray-700 */
+            margin-bottom: 0.25rem; /* Tailwind: mb-1 */
+        }
+        .text-input {
+            width: 100%;
+            padding: 0.75rem; /* Tailwind: p-3 */
+            border: 1px solid #d1d5db; /* Tailwind: border-gray-300 */
+            border-radius: 0.5rem; /* Tailwind: rounded-lg */
+            transition: ring 0.15s ease-in-out, border-color 0.15s ease-in-out;
+        }
+        .text-input:focus {
+            outline: none;
+            border-color: #2563eb; /* Tailwind: focus:border-blue-500 */
+            box-shadow: 0 0 0 2px #bfdbfe; /* Tailwind: focus:ring-2 focus:ring-blue-300 (or a lighter blue like ring-blue-200) */
+        }
+        .star-icon {
+            width: 32px; /* Increased size for better touch targets */
+            height: 32px;
+            cursor: pointer;
+            fill: none;
+            stroke: currentColor; /* Default stroke color (e.g., text-gray-400) */
+            stroke-width: 2;
+            transition: fill 0.2s ease-in-out, transform 0.1s ease;
+        }
+        .star-icon.filled {
+            fill: #facc15; /* Tailwind: fill-yellow-400 */
+            stroke: #facc15; /* Tailwind: stroke-yellow-400 */
+        }
+        .star-icon:hover {
+            transform: scale(1.1);
+        }
+        /* Custom focus styles for accessibility on star buttons */
+        .star-button:focus .star-icon {
+            outline: 2px solid #2563eb; /* Blue outline */
+            outline-offset: 2px;
+        }
+        /* General focus for the main submit button */
+        button:focus-visible { 
+            outline: 2px solid #2563eb; /* Blue outline */
+            outline-offset: 2px;
+        }
+        .feedback-question {
+            margin-bottom: 1.5rem; /* Tailwind: mb-6 */
+            padding-top: 0.5rem; /* Add some space above questions after new fields */
+        }
+        .question-text {
+            font-size: 1.125rem; /* Tailwind: text-lg */
+            font-weight: 500; /* Tailwind: font-medium */
+            color: #1f2937; /* Tailwind: text-gray-800 */
+            margin-bottom: 0.75rem; /* Tailwind: mb-3 */
+        }
+        .stars-container {
+            display: flex;
+            gap: 0.5rem; /* Tailwind: space-x-2 (gap is better for flex) */
+        }
+        textarea {
+            resize: vertical; /* Allow vertical resize only */
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-lg">
+        <h1 class="text-2xl sm:text-3xl font-bold text-center text-gray-700 mb-6 sm:mb-8">
+            Rate Your Delivery!
+        </h1>
+
+        <form id="feedbackForm"> 
+            <div class="input-field-group">
+                <label for="customerName" class="input-label">Name (Optional):</label>
+                <input type="text" id="customerName" name="customerName"
+                       class="text-input"
+                       placeholder="Enter your name">
+            </div>
+
+            <div class="input-field-group">
+                <label for="orderNumber" class="input-label">Delivery Order No. (Optional):</label>
+                <input type="text" id="orderNumber" name="orderNumber"
+                       class="text-input"
+                       placeholder="Enter your order number">
+            </div>
+
+            <hr class="my-6 border-gray-200">
+
+            <div class="feedback-question">
+                <p class="question-text">1. Was the delivery fast?</p>
+                <div class="stars-container" data-question="deliverySpeed">
+                    </div>
+                <input type="hidden" name="deliverySpeed" id="deliverySpeedRating">
+            </div>
+
+            <div class="feedback-question">
+                <p class="question-text">2. Was item packaging good?</p>
+                <div class="stars-container" data-question="itemPackaging">
+                    </div>
+                <input type="hidden" name="itemPackaging" id="itemPackagingRating">
+            </div>
+
+            <div class="feedback-question">
+                <p class="question-text">3. Was the driver polite?</p>
+                <div class="stars-container" data-question="driverPoliteness">
+                    </div>
+                <input type="hidden" name="driverPoliteness" id="driverPolitenessRating">
+            </div>
+
+            <div class="mb-6">
+                <label for="remarks" class="question-text block">4. Remarks:</label>
+                <textarea id="remarks" name="remarks" rows="4"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out text-input"
+                    placeholder="Write anything..."></textarea>
+            </div>
+
+            <button type="submit"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-150 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+                Submit Feedback
+            </button>
+        </form>
+
+        <div id="submissionMessage" class="mt-6 text-center text-green-600 font-medium" role="alert" aria-live="assertive">
+            </div>
+    </div>
+
+    <script>
+        // JavaScript for Star Rating Interactivity and Form Submission
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('feedbackForm');
+            const submissionMessage = document.getElementById('submissionMessage');
+            const starContainers = document.querySelectorAll('.stars-container');
+            const MAX_STARS = 5;
+
+            // SVG Star Icon
+            const starSVG = `
+                <svg class="star-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z"/>
+                </svg>
+            `;
+
+            /**
+             * Initializes stars for a given container.
+             * @param {HTMLElement} container - The container for the stars.
+             * @param {string} questionName - The name of the question for the hidden input.
+             */
+            function initializeStars(container, questionName) {
+                for (let i = 1; i <= MAX_STARS; i++) {
+                    const starWrapper = document.createElement('button'); // Use button for accessibility
+                    starWrapper.type = 'button'; // Prevent form submission
+                    starWrapper.classList.add('star-button'); 
+                    starWrapper.setAttribute('aria-label', `Rate ${i} out of ${MAX_STARS} stars for ${questionName}`);
+                    starWrapper.setAttribute('data-value', i);
+                    starWrapper.innerHTML = starSVG; 
+                    
+                    // Event listeners for interaction
+                    starWrapper.addEventListener('click', () => handleStarClick(container, questionName, i));
+                    starWrapper.addEventListener('mouseover', () => handleStarMouseOver(container, i));
+                    starWrapper.addEventListener('mouseout', () => handleStarMouseOut(container, questionName));
+                    starWrapper.addEventListener('focus', () => handleStarMouseOver(container, i)); 
+                    starWrapper.addEventListener('blur', () => handleStarMouseOut(container, questionName)); 
+
+                    container.appendChild(starWrapper);
+                }
+            }
+
+            /**
+             * Handles the click event on a star.
+             * @param {HTMLElement} container - The star container.
+             * @param {string} questionName - The name of the question.
+             * @param {number} rating - The rating value of the clicked star.
+             */
+            function handleStarClick(container, questionName, rating) {
+                const hiddenInput = document.getElementById(`${questionName}Rating`);
+                hiddenInput.value = rating; 
+                updateStarAppearance(container, rating); 
+            }
+
+            /**
+             * Handles mouse over event on a star for hover effect.
+             * @param {HTMLElement} container - The star container.
+             * @param {number} rating - The rating value of the hovered star.
+             */
+            function handleStarMouseOver(container, rating) {
+                updateStarAppearance(container, rating, true); // True indicates it's a preview
+            }
+
+            /**
+             * Handles mouse out event from stars, reverting to selected state.
+             * @param {HTMLElement} container - The star container.
+             * @param {string} questionName - The name of the question.
+             */
+            function handleStarMouseOut(container, questionName) {
+                const hiddenInput = document.getElementById(`${questionName}Rating`);
+                const currentRating = parseInt(hiddenInput.value) || 0; 
+                updateStarAppearance(container, currentRating); 
+            }
+            
+            /**
+             * Updates the visual appearance of stars (filled/unfilled).
+             * @param {HTMLElement} container - The star container.
+             * @param {number} rating - The current rating to display.
+             * @param {boolean} isPreview - Whether this is a hover preview.
+             */
+            function updateStarAppearance(container, rating, isPreview = false) {
+                const starsInContainer = container.querySelectorAll('.star-button .star-icon'); 
+                starsInContainer.forEach((starEl, index) => {
+                    if (index < rating) {
+                        starEl.classList.add('filled'); 
+                    } else {
+                        starEl.classList.remove('filled'); 
+                    }
+                });
+            }
+
+            // Initialize stars for all question containers on page load
+            starContainers.forEach(container => {
+                const questionName = container.dataset.question;
+                if (questionName) {
+                    initializeStars(container, questionName);
+                    const hiddenInput = document.getElementById(`${questionName}Rating`);
+                    hiddenInput.value = "0"; 
+                    updateStarAppearance(container, 0); 
+                } else {
+                    console.error('Star container is missing data-question attribute:', container);
+                }
+            });
+
+            // Handle Form Submission
+            form.addEventListener('submit', (event) => {
+                event.preventDefault(); // Prevent actual form submission
+
+                // Collect data from the form
+                const formData = new FormData(form);
+                const feedbackData = {
+                    customerName: formData.get('customerName').trim(),
+                    orderNumber: formData.get('orderNumber').trim(),
+                    deliverySpeed: parseInt(formData.get('deliverySpeed')) || 0, 
+                    itemPackaging: parseInt(formData.get('itemPackaging')) || 0,
+                    driverPoliteness: parseInt(formData.get('driverPoliteness')) || 0,
+                    remarks: formData.get('remarks').trim() 
+                };
+
+                // Log data to console (in a real app, you'd send this to a server)
+                console.log('Feedback Submitted:', feedbackData);
+
+                // Display submission success message
+                submissionMessage.textContent = 'Thank you for your feedback!';
+                submissionMessage.classList.remove('text-red-600'); 
+                submissionMessage.classList.add('text-green-600'); 
+
+                // Optionally, reset the form after a delay
+                setTimeout(() => {
+                    form.reset(); 
+                    starContainers.forEach(container => {
+                        const questionName = container.dataset.question;
+                        if (questionName) {
+                             const hiddenInput = document.getElementById(`${questionName}Rating`);
+                             hiddenInput.value = "0"; 
+                             updateStarAppearance(container, 0); 
+                        }
+                    });
+                    submissionMessage.textContent = ''; 
+                }, 3000); 
+            });
+        });
+    </script>
+</body>
+</html>
